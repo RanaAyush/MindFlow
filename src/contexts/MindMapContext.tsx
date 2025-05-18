@@ -143,7 +143,8 @@ export const MindMapProvider: React.FC<MindMapProviderProps> = ({ children }) =>
         parentId,
         childrenIds: [],
         expanded: false,
-        color: parentId ? '#8B5CF6' : '#3B82F6'
+        color: parentId ? '#8B5CF6' : '#3B82F6',
+        textColor: parentId ? 'white' : 'white'
       };
 
       // Add node to mindMap
@@ -321,9 +322,14 @@ export const MindMapProvider: React.FC<MindMapProviderProps> = ({ children }) =>
         // Create new node and get its ID
         const newNodeId = createNode(suggestion, { x, y }, id);
         
-        // Ensure connection is created
+        // Ensure connection is created and set proper color
         setState(prevState => {
           const newMindMap = { ...prevState.mindMap };
+          
+          // Update the node's color
+          newMindMap.nodes = newMindMap.nodes.map(n => 
+            n.id === newNodeId ? { ...n, color: '#8B5CF6' } : n
+          );
           
           // Check if connection already exists
           const connectionExists = newMindMap.connections.some(

@@ -2,6 +2,11 @@
  * Service to handle AI-related functionality for the mind map
  */
 
+import { GoogleGenerativeAI } from '@google/generative-ai';
+// Initialize Gemini API
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
+
+
 // Mock data for AI suggestions (in a real app, this would call an AI service)
 const mockSuggestions: Record<string, string[]> = {
   'Central Idea': [
@@ -72,18 +77,43 @@ const defaultSuggestions = [
 ];
 
 /**
- * Fetch AI suggestions for expanding a node
- * In a real app, this would call an AI service (like GPT-4) with the node text
- * and get back relevant suggestions
+ * Fetch AI suggestions for expanding a node using Gemini API
  */
 export const fetchAINodeSuggestions = async (nodeText: string): Promise<string[]> => {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // For demo purposes, use predefined mock suggestions or default ones
-  const suggestions = mockSuggestions[nodeText] || generateGenericSuggestions(nodeText);
-  
-  return suggestions;
+  try {
+    // Initialize the model
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+    // Create a prompt for the AI
+    const prompt = `Given the following mind map node text: "${nodeText}", 
+    generate 4-5 relevant and concise subtopics or related concepts that would make good child nodes in a mind map.
+    Each suggestion should be 2-4 words maximum.
+    Return only the suggestions as a comma-separated list, no additional text.`;
+
+    // Generate content
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    const text = response.text();
+
+    // Parse the response into an array of suggestions
+    const suggestions = text
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s.length > 0)
+      .slice(0, 5); // Ensure we only get 5 suggestions max
+
+    return suggestions;
+  } catch (error) {
+    console.error('Error fetching AI suggestions:', error);
+    // Fallback to default suggestions if API call fails
+    return [
+      `${nodeText} - Detail 1`,
+      `${nodeText} - Detail 2`,
+      `${nodeText} - Example`,
+      `${nodeText} - Application`,
+      'Related Concept'
+    ];
+  }
 };
 
 /**

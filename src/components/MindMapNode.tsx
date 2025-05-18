@@ -238,7 +238,7 @@ const MindMapNode: React.FC<MindMapNodeProps> = ({ node, isSelected, zoom }) => 
     ? `${nodeColor}` 
     : isRootNode 
       ? `${nodeColor}` 
-      : 'white dark:bg-gray-800';
+      : node.color || 'white dark:bg-gray-800';
   
   // Use the node's textColor if available
   const nodeTextColor = node.textColor || (isSelected || isRootNode ? 'white' : 'black');
